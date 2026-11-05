@@ -1,0 +1,124 @@
+/*
+  Casa Craft design tokens.
+
+  Surfaces come from the brand's own photography: the limewash plaster wall behind the
+  Zabarwan chair and the warm panelled room behind the Nishat pair. Product colour
+  (saddle, Dal, cocoa) lives in the content layer, never in the controls.
+
+  Contrast (light / dark), measured against --paper:
+    --ink 15.5:1 / 15.7:1   --ink-2 6.5:1 / 8.5:1   --ink-3 5.1:1 / 5.7:1 (on panel)
+    --brass 4.6:1 / 8.0:1   --signal 5.9:1 / 7.3:1  --focus 6.2:1 / 9.7:1
+*/
+
+@property --stage {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #eae3d7;
+}
+
+:root {
+  color-scheme: light dark;
+
+  /* Primitive palette */
+  --limewash-50: #f4efe6;
+  --limewash-100: #eae3d7;
+  --limewash-200: #e0d7c8;
+  --walnut-950: #1c1712;
+  --walnut-700: #5e5348;
+  --walnut-600: #6f6357;
+  --brass-600: #8a6534;
+  --chinar-600: #a3361f;
+  --dal-700: #2f5f6b;
+
+  /* Semantic */
+  --paper: var(--limewash-50);
+  --panel: var(--limewash-100);
+  --panel-2: var(--limewash-200);
+  --ink: var(--walnut-950);
+  --ink-2: var(--walnut-700);
+  --ink-3: var(--walnut-600);
+  --line: rgb(28 23 18 / 0.14);
+  --line-strong: rgb(28 23 18 / 0.32);
+  --brass: var(--brass-600);
+  --signal: var(--chinar-600);
+  --focus: var(--dal-700);
+  --cta: var(--walnut-950);
+  --cta-ink: var(--limewash-50);
+  --scrim: rgb(20 17 14 / 0.42);
+  --glass: rgb(244 239 230 / 0.72);
+  --shadow-soft: 0 1px 0 rgb(28 23 18 / 0.04), 0 24px 48px -28px rgb(28 23 18 / 0.35);
+
+  /* Product tints: the stage behind a piece takes on its material */
+  --tint-saddle: #f2e4d2;
+  --tint-dal: #e1ebe8;
+  --tint-cocoa: #ece2d8;
+  --tint-neutral: var(--panel);
+  --stage: var(--tint-neutral);
+
+  /* Type */
+  --font-sans: 'Instrument Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Cormorant Variable', 'Cormorant', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+
+  --step--1: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem); /* 13 to 14 px: meta, never below 13 */
+  --step-0: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);     /* 16 to 17 px: body */
+  --step-1: clamp(1.1875rem, 1.1rem + 0.4vw, 1.375rem);   /* 19 to 22 px: lead */
+  --step-2: clamp(1.5rem, 1.3rem + 0.9vw, 2rem);          /* 24 to 32 px: section titles */
+  --step-3: clamp(2.25rem, 1.7rem + 2.4vw, 3.75rem);      /* 36 to 60 px: page titles */
+  --step-4: clamp(3rem, 1.9rem + 5.2vw, 7.5rem);          /* 48 to 120 px: hero display */
+
+  /* Space: 4 px base */
+  --s-1: 0.25rem; --s-2: 0.5rem; --s-3: 0.75rem; --s-4: 1rem; --s-5: 1.5rem;
+  --s-6: 2rem; --s-7: 3rem; --s-8: 4rem; --s-9: 6rem; --s-10: 8rem;
+  --gutter: clamp(1rem, 0.6rem + 2vw, 2.5rem);
+  --section: clamp(4rem, 2.5rem + 7vw, 9rem);
+  --max: 1440px;
+  --header-h: 64px;
+
+  /* Shape */
+  --r-sm: 6px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+
+  /* Motion vocabulary */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-smooth: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --t-micro: 180ms;
+  --t-component: 280ms;
+  --t-modal: 320ms;
+  --t-hero: 700ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #14110e;
+    --panel: #1f1a15;
+    --panel-2: #29231c;
+    --ink: #f1eadf;
+    --ink-2: #b9ad9e;
+    --ink-3: #a0937f;
+    --line: rgb(241 234 223 / 0.14);
+    --line-strong: rgb(241 234 223 / 0.32);
+    --brass: #c9a36a;
+    --signal: #e8876c;
+    --focus: #8cc3cc;
+    --cta: #f1eadf;
+    --cta-ink: #14110e;
+    --scrim: rgb(0 0 0 / 0.6);
+    --glass: rgb(20 17 14 / 0.72);
+    --shadow-soft: 0 1px 0 rgb(0 0 0 / 0.2), 0 24px 48px -28px rgb(0 0 0 / 0.7);
+    --tint-saddle: #241a11;
+    --tint-dal: #0f1b1c;
+    --tint-cocoa: #1f1813;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --ink-2: var(--ink);
+    --ink-3: var(--ink);
+    --line: var(--line-strong);
+    --glass: var(--paper);
+  }
+}

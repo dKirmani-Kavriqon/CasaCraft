@@ -1,0 +1,263 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { brand, instagramUrl, mapsUrl } from '../data/catalog';
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const nav = [
+  { href: '/shop', label: 'Shop' },
+  { href: '/materials', label: 'Materials' },
+  { href: '/atelier', label: 'Atelier' },
+  { href: '/#visit', label: 'Visit' },
+];
+const isCurrent = (href: string) => (href === '/shop' ? path.startsWith('/shop') || path.startsWith('/product') : path === href);
+---
+<header class="site-header" data-header>
+  <div class="site-header__bar wrap">
+    <a href="/" class="site-header__logo" aria-label={`${brand.name}, home`}>
+      <Logo />
+    </a>
+
+    <nav class="site-header__nav" aria-label="Primary">
+      <ul role="list">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <button class="enquiry-btn" type="button" data-enquiry-open aria-haspopup="dialog">
+        <Icon name="bag" />
+        <span class="enquiry-btn__label">Enquiry</span>
+        <span class="enquiry-btn__count" data-enquiry-count aria-hidden="true">0</span>
+        <span class="visually-hidden" data-enquiry-count-label>, no pieces</span>
+      </button>
+      <button class="icon-btn site-header__menu" type="button" data-menu-open aria-haspopup="dialog" aria-label="Open menu">
+        <Icon name="menu" size={22} />
+      </button>
+    </div>
+  </div>
+</header>
+
+<dialog class="menu-sheet" data-menu aria-label="Menu">
+  <div class="menu-sheet__inner wrap">
+    <div class="menu-sheet__top">
+      <Logo />
+      <button class="icon-btn" type="button" data-menu-close aria-label="Close menu">
+        <Icon name="close" size={22} />
+      </button>
+    </div>
+    <nav aria-label="Primary">
+      <ul role="list" class="menu-sheet__links">
+        <li><a href="/">Home</a></li>
+        {nav.map((item) => (
+          <li>
+            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <div class="menu-sheet__foot">
+      <a class="link-arrow" href={instagramUrl} rel="noopener" target="_blank"><Icon name="instagram" /> @{brand.instagram}</a>
+      <a class="link-arrow" href={mapsUrl} rel="noopener" target="_blank"><Icon name="pin" /> {brand.location}</a>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: var(--header-h);
+    transition:
+      transform var(--t-component) var(--ease-smooth),
+      background-color var(--t-component) var(--ease-out),
+      box-shadow var(--t-component) var(--ease-out);
+  }
+  /* The bar floats over content once scrolled: a light, blurred control layer. */
+  .site-header.is-scrolled {
+    background: var(--glass);
+    -webkit-backdrop-filter: saturate(1.4) blur(18px);
+    backdrop-filter: saturate(1.4) blur(18px);
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .site-header.is-hidden {
+    transform: translateY(-100%);
+  }
+  .site-header__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-5);
+    height: 100%;
+  }
+  .site-header__logo {
+    text-decoration: none;
+    border-radius: var(--r-sm);
+  }
+  .site-header__nav ul {
+    display: flex;
+    gap: var(--s-2);
+  }
+  .site-header__nav a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--s-3);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: var(--ink-2);
+    transition: color var(--t-micro) var(--ease-out);
+  }
+  .site-header__nav a::after {
+    content: '';
+    position: absolute;
+    left: var(--s-3);
+    right: var(--s-3);
+    bottom: 10px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--t-component) var(--ease-out);
+  }
+  .site-header__nav a:hover,
+  .site-header__nav a[aria-current='page'] {
+    color: var(--ink);
+  }
+  .site-header__nav a:hover::after,
+  .site-header__nav a[aria-current='page']::after {
+    transform: scaleX(1);
+  }
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-1);
+  }
+  .enquiry-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 44px;
+    padding: 0 var(--s-3) 0 var(--s-3);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: transparent;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition:
+      background-color var(--t-micro) var(--ease-out),
+      color var(--t-micro) var(--ease-out);
+  }
+  .enquiry-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .enquiry-btn__count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: var(--r-pill);
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .enquiry-btn:hover .enquiry-btn__count {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .enquiry-btn__count.is-empty {
+    background: transparent;
+    color: var(--ink-2);
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+  }
+  .site-header__menu {
+    display: none;
+  }
+
+  @media (max-width: 860px) {
+    .site-header__nav {
+      display: none;
+    }
+    .site-header__menu {
+      display: inline-grid;
+    }
+    .enquiry-btn__label {
+      display: none;
+    }
+    .enquiry-btn {
+      border-color: transparent;
+      padding-inline: var(--s-2);
+    }
+  }
+
+  /* Menu sheet */
+  .menu-sheet {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .menu-sheet::backdrop {
+    background: var(--scrim);
+  }
+  .menu-sheet__inner {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100%;
+    padding-bottom: max(var(--s-6), env(safe-area-inset-bottom));
+  }
+  .menu-sheet__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--header-h);
+  }
+  .menu-sheet__links {
+    display: grid;
+    align-content: center;
+    gap: var(--s-2);
+  }
+  .menu-sheet__links a {
+    display: block;
+    padding: var(--s-1) 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(2.6rem, 11vw, 4rem);
+    line-height: 1.05;
+    text-decoration: none;
+  }
+  .menu-sheet__links a[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.12em;
+  }
+  .menu-sheet__foot {
+    display: grid;
+    gap: var(--s-1);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--line);
+    color: var(--ink-2);
+  }
+</style>

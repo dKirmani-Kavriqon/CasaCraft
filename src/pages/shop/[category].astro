@@ -1,0 +1,15 @@
+---
+import Base from '../../layouts/Base.astro';
+import ShopView from '../../components/ShopView.astro';
+import { categories, type CategoryId } from '../../data/catalog';
+
+export function getStaticPaths() {
+  return categories.map((c) => ({ params: { category: c.id } }));
+}
+
+const id = Astro.params.category as CategoryId;
+const cat = categories.find((c) => c.id === id)!;
+---
+<Base title={cat.name} description={`${cat.name} from Casa Craft Interiors. ${cat.blurb}`}>
+  <ShopView category={id} />
+</Base>

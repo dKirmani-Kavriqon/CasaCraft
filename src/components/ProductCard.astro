@@ -1,0 +1,170 @@
+---
+import { Image } from 'astro:assets';
+import { type Product, formatPrice, materialById, categoryName, productMaterials } from '../data/catalog';
+
+interface Props {
+  product: Product;
+  priority?: boolean;
+  size?: 'regular' | 'wide';
+}
+const { product: p, priority = false, size = 'regular' } = Astro.props;
+const swatches = productMaterials(p);
+const isPhoto = p.imageKind === 'photo';
+---
+<article
+  class:list={['card', `card--${size}`, { 'card--photo': isPhoto }]}
+  data-card
+  data-category={p.category}
+  data-upholstery={materialById[p.upholstery].family}
+  data-frame={p.frame ?? ''}
+  data-price={p.price}
+  data-tint={p.tint}
+>
+  <a class="card__link" href={`/product/${p.slug}`}>
+    <div class="card__stage">
+      <Image
+        src={p.image}
+        alt={`${p.name}, ${p.variant}`}
+        widths={isPhoto ? [480, 720, 960] : [400, 640, 900, 1200]}
+        sizes={size === 'wide' ? '(max-width: 760px) 100vw, 66vw' : '(max-width: 760px) 100vw, (max-width: 1100px) 50vw, 33vw'}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : 'auto'}
+        class="card__img"
+        style={`view-transition-name: vt-${p.slug}`}
+      />
+      <span class="card__cat">{categoryName(p.category)}</span>
+    </div>
+    <div class="card__body">
+      <div>
+        <h3 class="card__name">{p.name}</h3>
+        <p class="card__variant">{p.variant}</p>
+      </div>
+      <p class="card__price price">{formatPrice(p.price)}</p>
+    </div>
+  </a>
+  <ul class="card__swatches" role="list" aria-label="Materials">
+    {
+      swatches.map((m) => (
+        <li title={`${m.name} ${m.family.toLowerCase()}`}>
+          <span class="dot" style={`--dot: ${m.hex}`} aria-hidden="true" />
+          <span class="visually-hidden">{m.name}, {m.family}</span>
+        </li>
+      ))
+    }
+  </ul>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: grid;
+    gap: var(--s-3);
+  }
+  .card__link {
+    display: grid;
+    gap: var(--s-3);
+    text-decoration: none;
+    border-radius: var(--r-md);
+  }
+  .card__stage {
+    --card-tint: var(--panel);
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--r-md);
+    background: var(--card-tint);
+    overflow: hidden;
+    isolation: isolate;
+    transition: background-color 500ms var(--ease-smooth);
+  }
+  /* Spans two columns: 33 / 20 keeps its height level with a 4 / 5 card beside it. */
+  .card--wide .card__stage {
+    aspect-ratio: 33 / 20;
+  }
+  .card[data-tint='saddle'] .card__link:hover .card__stage { --card-tint: var(--tint-saddle); }
+  .card[data-tint='dal'] .card__link:hover .card__stage { --card-tint: var(--tint-dal); }
+  .card[data-tint='cocoa'] .card__link:hover .card__stage { --card-tint: var(--tint-cocoa); }
+
+  /* A soft floor shadow grounds cut-out pieces on the stage. */
+  .card__stage::after {
+    content: '';
+    position: absolute;
+    left: 18%;
+    right: 18%;
+    bottom: 9%;
+    height: 7%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(0 0 0 / 0.22), transparent);
+    z-index: -1;
+    transition: transform 600ms var(--ease-out), opacity 600ms var(--ease-out);
+  }
+  .card--photo .card__stage::after {
+    display: none;
+  }
+  .card__img {
+    width: 78%;
+    height: 82%;
+    object-fit: contain;
+    object-position: center bottom;
+    transition: transform 700ms var(--ease-out);
+  }
+  .card--wide .card__img {
+    width: 80%;
+    height: 84%;
+  }
+  .card--photo .card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  @media (hover: hover) {
+    .card__link:hover .card__img {
+      transform: translateY(-1.5%) scale(1.03);
+    }
+    .card__link:hover .card__stage::after {
+      transform: scaleX(0.92);
+      opacity: 0.8;
+    }
+    .card--photo .card__link:hover .card__img {
+      transform: scale(1.04);
+    }
+  }
+  .card__cat {
+    position: absolute;
+    top: var(--s-3);
+    left: var(--s-3);
+    padding: 4px 10px;
+    border-radius: var(--r-pill);
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .card__body {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: var(--s-4);
+  }
+  .card__name {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  .card__variant {
+    font-size: var(--step--1);
+    color: var(--ink-2);
+  }
+  .card__price {
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+  .card__swatches {
+    display: flex;
+    gap: 6px;
+    margin-top: calc(-1 * var(--s-1));
+  }
+</style>

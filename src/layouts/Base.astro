@@ -1,0 +1,113 @@
+---
+import '@fontsource-variable/instrument-sans/wght.css';
+import '@fontsource-variable/cormorant/wght.css';
+import '@fontsource-variable/cormorant/wght-italic.css';
+import '../styles/global.css';
+
+import { getImage } from 'astro:assets';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import EnquiryDrawer from '../components/EnquiryDrawer.astro';
+import { brand, products } from '../data/catalog';
+import ogImage from '../assets/scenes/nishat-pair.jpg';
+
+interface Props {
+  title?: string;
+  description?: string;
+  tint?: 'saddle' | 'dal' | 'cocoa' | 'neutral';
+  bodyClass?: string;
+}
+const {
+  title,
+  description = 'Handcrafted solid wood furniture from Nowgam, Srinagar. Chairs and lounge pieces in leather and bouclé, made to order.',
+  tint = 'neutral',
+  bodyClass,
+} = Astro.props;
+
+const pageTitle = title ? `${title} | ${brand.name}` : `${brand.name} | Handcrafted solid wood furniture`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const og = await getImage({ src: ogImage, width: 1200, format: 'jpg' });
+
+// Small catalogue for the client-side enquiry list.
+const catalogData = Object.fromEntries(
+  await Promise.all(
+    products.map(async (p) => {
+      const thumb = await getImage({ src: p.image, width: 176, format: 'webp' });
+      return [p.slug, { name: p.name, variant: p.variant, price: p.price, url: `/product/${p.slug}`, thumb: thumb.src }];
+    }),
+  ),
+);
+---
+<!doctype html>
+<html lang="en-IN" data-tint={tint}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#f4efe6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14110e" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={brand.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(og.src, Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>
+      // Motion is opt-out: skip hidden reveal states entirely when people ask for reduced motion.
+      (function () {
+        var html = document.documentElement;
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          html.classList.add('motion');
+          // Safety net: never leave content hidden if scripts fail to start.
+          setTimeout(function () {
+            if (!html.classList.contains('motion-ready')) html.classList.remove('motion');
+          }, 2500);
+        }
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body class={bodyClass}>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <EnquiryDrawer />
+    <p class="visually-hidden" aria-live="polite" data-announce></p>
+    <script type="application/json" id="catalog-data" set:html={JSON.stringify(catalogData)} />
+    <script>
+      import '../scripts/site';
+      import '../scripts/enquiry';
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  html[data-tint='saddle'] { --stage: var(--tint-saddle); }
+  html[data-tint='dal'] { --stage: var(--tint-dal); }
+  html[data-tint='cocoa'] { --stage: var(--tint-cocoa); }
+
+  .skip-link {
+    position: fixed;
+    top: var(--s-2);
+    left: var(--s-2);
+    z-index: 100;
+    padding: var(--s-2) var(--s-4);
+    border-radius: var(--r-pill);
+    background: var(--ink);
+    color: var(--paper);
+    transform: translateY(-160%);
+    transition: transform var(--t-micro) var(--ease-out);
+  }
+  .skip-link:focus {
+    transform: none;
+  }
+  main:focus {
+    outline: none;
+  }
+</style>

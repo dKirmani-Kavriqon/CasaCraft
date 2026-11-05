@@ -1,0 +1,267 @@
+---
+import ProductCard from './ProductCard.astro';
+import Icon from './Icon.astro';
+import { products, categories, type CategoryId } from '../data/catalog';
+
+interface Props {
+  category?: CategoryId;
+}
+const { category } = Astro.props;
+const current = categories.find((c) => c.id === category);
+const items = category ? products.filter((p) => p.category === category) : products;
+const counts = Object.fromEntries(categories.map((c) => [c.id, products.filter((p) => p.category === c.id).length]));
+const title = current ? current.name : 'All pieces';
+const blurb = current
+  ? current.blurb
+  : 'Chairs and soft pieces in solid wood, leather and bouclé. Every one is made to order in our workshop in Nowgam, Srinagar.';
+const plural = (n: number) => `${n} ${n === 1 ? 'piece' : 'pieces'}`;
+---
+<section class="shop wrap">
+  <header class="shop__head">
+    <nav class="shop__crumbs meta" aria-label="Breadcrumb">
+      <ol role="list">
+        <li><a href="/">Home</a></li>
+        <li><a href="/shop" aria-current={current ? undefined : 'page'}>Shop</a></li>
+        {current && <li><span aria-current="page">{current.name}</span></li>}
+      </ol>
+    </nav>
+    <h1 class="shop__title display" data-reveal="lines" data-now>{title}</h1>
+    <p class="lead" data-reveal="fade">{blurb}</p>
+  </header>
+
+  <nav class="shop__cats" aria-label="Categories">
+    <ul role="list">
+      <li>
+        <a href="/shop" aria-current={current ? undefined : 'page'}>
+          All <span class="shop__n">{products.length}</span>
+        </a>
+      </li>
+      {
+        categories.map((c) => (
+          <li>
+            <a href={`/shop/${c.id}`} aria-current={c.id === category ? 'page' : undefined}>
+              {c.name} <span class="shop__n">{counts[c.id]}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  <div class="shop__tools" data-shop-tools>
+    <div class="shop__filters" role="group" aria-label="Filter by material">
+      <span class="meta shop__label">Upholstery</span>
+      <button type="button" class="chip" aria-pressed="false" data-filter="upholstery" data-value="Leather">Leather</button>
+      <button type="button" class="chip" aria-pressed="false" data-filter="upholstery" data-value="Bouclé">Bouclé</button>
+      <span class="meta shop__label">Frame</span>
+      <button type="button" class="chip" aria-pressed="false" data-filter="frame" data-value="walnut">Walnut finish</button>
+      <button type="button" class="chip" aria-pressed="false" data-filter="frame" data-value="ebonised">Ebonised</button>
+    </div>
+    <div class="shop__sort">
+      <p class="meta" data-shop-count aria-live="polite">{plural(items.length)}</p>
+      <label class="select">
+        <span class="visually-hidden">Sort by</span>
+        <select data-sort>
+          <option value="featured">Featured</option>
+          <option value="price-asc">Price, low to high</option>
+          <option value="price-desc">Price, high to low</option>
+        </select>
+        <Icon name="chevron" size={16} />
+      </label>
+    </div>
+  </div>
+
+  <h2 class="visually-hidden">Pieces</h2>
+  <div class="shop__grid" data-shop-grid>
+    {items.map((p, i) => <ProductCard product={p} priority={i < 3} />)}
+  </div>
+
+  <div class="shop__empty" data-shop-empty hidden>
+    <p class="display">Nothing in that combination</p>
+    <p class="meta">No pieces here match every filter you picked. Clear them to see the whole range again.</p>
+    <button type="button" class="btn btn--ghost btn--small" data-clear>Clear filters</button>
+  </div>
+</section>
+
+<script>
+  import '../scripts/shop';
+</script>
+
+<style>
+  .shop {
+    padding-top: clamp(var(--s-6), 5vw, var(--s-9));
+  }
+  .shop__head {
+    display: grid;
+    gap: var(--s-4);
+    max-width: 52rem;
+  }
+  .shop__crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+  .shop__crumbs li + li::before {
+    content: '/';
+    margin-right: var(--s-2);
+    color: var(--ink-3);
+  }
+  .shop__crumbs a {
+    text-decoration: none;
+  }
+  .shop__crumbs a:hover {
+    text-decoration: underline;
+  }
+  .shop__title {
+    font-size: var(--step-4);
+  }
+  .shop__cats {
+    margin-top: var(--s-7);
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .shop__cats ul {
+    display: flex;
+    gap: var(--s-5);
+    width: max-content;
+  }
+  .shop__cats a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 52px;
+    font-weight: 500;
+    text-decoration: none;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .shop__cats a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--ink);
+    transform: scaleX(0);
+    transition: transform var(--t-component) var(--ease-out);
+  }
+  .shop__cats a:hover,
+  .shop__cats a[aria-current='page'] {
+    color: var(--ink);
+  }
+  .shop__cats a[aria-current='page']::after,
+  .shop__cats a:hover::after {
+    transform: scaleX(1);
+  }
+  .shop__n {
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .shop__tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding-block: var(--s-5);
+  }
+  .shop__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  .shop__label:not(:first-child) {
+    margin-left: var(--s-4);
+  }
+  .shop__sort {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+  }
+  .chip {
+    min-height: 40px;
+    padding: 0 var(--s-4);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: transparent;
+    font-size: 0.9375rem;
+    transition:
+      background-color var(--t-micro) var(--ease-out),
+      color var(--t-micro) var(--ease-out),
+      border-color var(--t-micro) var(--ease-out);
+  }
+  .chip:hover {
+    border-color: var(--ink);
+  }
+  .chip[aria-pressed='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+  .chip[aria-pressed='true']::before {
+    content: '✓ ';
+  }
+  .select {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .select select {
+    appearance: none;
+    min-height: 40px;
+    padding: 0 var(--s-7) 0 var(--s-4);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: transparent;
+    font-size: 0.9375rem;
+  }
+  .select :global(.icon) {
+    position: absolute;
+    right: var(--s-3);
+    pointer-events: none;
+  }
+  .shop__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-8) var(--s-5);
+    padding-top: var(--s-3);
+  }
+  .shop__grid > :global([hidden]) {
+    display: none;
+  }
+  @media (max-width: 1100px) {
+    .shop__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 620px) {
+    .shop__grid {
+      grid-template-columns: 1fr;
+      gap: var(--s-7);
+    }
+    .shop__label:not(:first-child) {
+      margin-left: 0;
+    }
+    .shop__filters {
+      display: grid;
+      grid-template-columns: auto 1fr 1fr;
+    }
+  }
+  .shop__empty {
+    display: grid;
+    justify-items: start;
+    gap: var(--s-3);
+    padding-block: var(--s-8);
+  }
+  .shop__empty[hidden] {
+    display: none;
+  }
+  .shop__empty .display {
+    font-size: var(--step-3);
+  }
+</style>
