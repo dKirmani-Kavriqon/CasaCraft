@@ -1,0 +1,746 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import Icon from '../../components/Icon.astro';
+import {
+  products,
+  productBySlug,
+  materialById,
+  formatPrice,
+  categoryName,
+  instagramDm,
+  type Product,
+} from '../../data/catalog';
+
+export function getStaticPaths() {
+  return products.map((p) => ({ params: { slug: p.slug }, props: { product: p } }));
+}
+
+const { product: p } = Astro.props as { product: Product };
+const uph = materialById[p.upholstery];
+const frame = p.frame ? materialById[p.frame] : undefined;
+// Upholstery options: this piece plus any sibling made in another material.
+const options = [p, ...(p.siblings ?? []).map((s) => productBySlug[s])].sort((a, b) =>
+  a.slug === b.slug ? 0 : products.indexOf(a) - products.indexOf(b),
+);
+// Suggested pieces: the hand-picked pairings first, then the rest of the range, three in all.
+// Sibling variants are left out: the swatch already reaches them, and their images share view transition names.
+const exclude = new Set([p.slug, ...(p.siblings ?? [])]);
+const pairs = [...p.pairsWith, ...products.map((x) => x.slug).filter((s) => !p.pairsWith.includes(s))]
+  .filter((s) => !exclude.has(s))
+  .slice(0, 3)
+  .map((s) => productBySlug[s]);
+const isPhoto = p.imageKind === 'photo';
+const views = [
+  { id: 'product', label: 'Product' },
+  { id: 'detail', label: 'Detail' },
+  { id: 'room', label: 'In a room' },
+];
+---
+<Base title={`${p.name}, ${p.variant}`} description={`${p.summary} ${p.name} in ${p.variant.toLowerCase()}, handcrafted by Casa Craft Interiors in Nowgam, Srinagar.`} tint={p.tint}>
+  <div class="buybar" data-buybar data-swap="buybar" aria-hidden="true" inert>
+    <div class="buybar__inner wrap">
+      <div class="buybar__id">
+        <Image src={p.image} alt="" width={96} height={96} class="buybar__thumb" />
+        <p><strong>{p.name}</strong> <span class="meta">{p.variant}</span></p>
+      </div>
+      <button class="btn" type="button" data-add={p.slug} tabindex="-1">
+        <span class="buybar__long" data-add-label>Add to enquiry</span><span class="buybar__short" aria-hidden="true">Add</span>
+        <span class="buybar__price price">{formatPrice(p.price)}</span>
+      </button>
+    </div>
+  </div>
+
+  <article class="pdp wrap" data-product={p.slug}>
+    <nav class="pdp__crumbs meta" aria-label="Breadcrumb">
+      <ol role="list">
+        <li><a href="/shop">Shop</a></li>
+        <li><a href={`/shop/${p.category}`}>{categoryName(p.category)}</a></li>
+        <li><span aria-current="page" data-swap="crumb">{p.name}</span></li>
+      </ol>
+    </nav>
+
+    <div class="pdp__grid">
+      <!-- Centre: the piece on its stage -->
+      <section class="pdp__stage-col" aria-label="Images">
+        <div class="pdp__tabs" role="tablist" aria-label="View">
+          {
+            views.map((v, i) => (
+              <button
+                type="button"
+                role="tab"
+                id={`tab-${v.id}`}
+                aria-controls={`view-${v.id}`}
+                aria-selected={i === 0 ? 'true' : 'false'}
+                tabindex={i === 0 ? 0 : -1}
+                data-view-tab={v.id}
+              >
+                {v.label}
+              </button>
+            ))
+          }
+        </div>
+        <div class:list={['pdp__stage stage', { 'pdp__stage--photo': isPhoto }]} data-swap="stage">
+          <div class="pdp__view is-active" id="view-product" role="tabpanel" aria-labelledby="tab-product" data-view="product">
+            <Image
+              src={p.image}
+              alt={`${p.name} in ${p.variant}`}
+              widths={isPhoto ? [600, 900] : [480, 720, 960, 1280]}
+              sizes="(max-width: 1100px) 100vw, 44vw"
+              loading="eager"
+              fetchpriority="high"
+              class="pdp__img"
+              style={`view-transition-name: vt-${p.slug}`}
+            />
+          </div>
+          <div class="pdp__view" id="view-detail" role="tabpanel" aria-labelledby="tab-detail" data-view="detail" hidden>
+            <Image src={p.detail} alt={`Close view of the ${p.name}'s frame and upholstery`} widths={[600, 900, 1200]} sizes="(max-width: 1100px) 100vw, 44vw" class="pdp__photo" />
+          </div>
+          <div class="pdp__view" id="view-room" role="tabpanel" aria-labelledby="tab-room" data-view="room" hidden>
+            <Image src={p.room} alt={`The ${p.collection} collection in a room`} widths={[700, 1000, 1400]} sizes="(max-width: 1100px) 100vw, 44vw" class="pdp__photo" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Left: the story -->
+      <section class="pdp__info" aria-labelledby="pdp-title" data-swap="info">
+        <p class="eyebrow">{p.collection} collection</p>
+        <h1 id="pdp-title" class="pdp__title">{p.name}</h1>
+        <p class="pdp__variant">{p.variant}</p>
+        <p class="pdp__price price">{formatPrice(p.price)}</p>
+        <p class="pdp__story">{p.story}</p>
+        <ul class="pdp__highlights" role="list">
+          {p.highlights.map((h) => <li>{h}</li>)}
+        </ul>
+      </section>
+
+      <!-- Right: configure and add -->
+      <section class="pdp__config" aria-label="Choose and enquire">
+        <div class="config-card">
+          <fieldset class="config__group">
+            <legend>
+              <span>Upholstery</span>
+              <span class="meta" data-swap="uph-name">{uph.family}, {uph.name}</span>
+            </legend>
+            <div class="swatches" data-swatches>
+              {
+                options.map((o) => {
+                  const m = materialById[o.upholstery];
+                  return (
+                    <a
+                      class="swatch"
+                      href={`/product/${o.slug}`}
+                      aria-current={o.slug === p.slug ? 'true' : undefined}
+                      data-swatch={o.slug}
+                      data-tint={o.tint}
+                      aria-label={`${m.name} ${m.family.toLowerCase()}${o.slug === p.slug ? ', selected' : ''}`}
+                    >
+                      <Image src={m.swatch} alt="" width={160} height={160} />
+                    </a>
+                  );
+                })
+              }
+            </div>
+            <p class="meta config__desc" data-swap="uph-desc">{uph.description}</p>
+          </fieldset>
+
+          {
+            frame && (
+              <div class="config__group config__row">
+                <span>Frame</span>
+                <span class="config__frame">
+                  <span class="dot" style={`--dot: ${frame.hex}`} aria-hidden="true" />
+                  {frame.name}
+                </span>
+              </div>
+            )
+          }
+
+          <div class="config__group config__row config__row--note">
+            <span>Made to order</span>
+            <span class="meta">Lead time confirmed when you enquire</span>
+          </div>
+
+          <button class="btn btn--block pdp__add" type="button" data-add={p.slug} data-main-add>
+            <span data-add-label>Add to enquiry</span> <span class="price">{formatPrice(p.price)}</span>
+          </button>
+          <a class="link-arrow config__sample" href={instagramDm} target="_blank" rel="noopener">
+            Ask about a sample <Icon name="arrow" size={18} />
+          </a>
+        </div>
+
+        <div class="disclosures">
+          <details name="pdp-more" open>
+            <summary>Dimensions <Icon name="chevron" size={18} /></summary>
+            <dl class="dims">
+              {p.dimensions.map((d) => (
+                <div>
+                  <dt>{d.label}</dt>
+                  <dd>{d.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
+          <details name="pdp-more">
+            <summary>Materials and care <Icon name="chevron" size={18} /></summary>
+            <div class="care">
+              {[uph, frame].filter(Boolean).map((m) => (
+                <p><strong>{m!.name}.</strong> {m!.care}</p>
+              ))}
+              <a class="link-arrow" href="/materials">Material library <Icon name="arrow" size={18} /></a>
+            </div>
+          </details>
+          <details name="pdp-more">
+            <summary>How ordering works <Icon name="chevron" size={18} /></summary>
+            <ol class="steps">
+              <li>Add pieces to your enquiry and send it to us on Instagram.</li>
+              <li>We confirm materials, lead time and delivery to your door.</li>
+              <li>Your piece is made by hand in our workshop in Nowgam.</li>
+            </ol>
+          </details>
+        </div>
+      </section>
+    </div>
+  </article>
+
+  <section class="pdp-gallery" aria-label="More views">
+    <div class="pdp-gallery__track" data-gallery tabindex="0" aria-label="Scrollable gallery">
+      <figure class="pdp-gallery__item pdp-gallery__item--wide">
+        <Image src={p.room} alt={`The ${p.collection} collection in a room`} widths={[800, 1200, 1800]} sizes="(max-width: 800px) 90vw, 62vw" />
+      </figure>
+      <figure class="pdp-gallery__item">
+        <Image src={p.detail} alt={`Detail of the ${p.name}`} widths={[600, 900, 1200]} sizes="(max-width: 800px) 80vw, 34vw" />
+      </figure>
+      <figure class="pdp-gallery__item pdp-gallery__item--swatch">
+        <Image src={uph.swatch} alt={`${uph.name} ${uph.family.toLowerCase()} close up`} widths={[500, 700]} sizes="(max-width: 800px) 70vw, 26vw" />
+        <figcaption class="meta">{uph.family}, {uph.name}</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="wrap section pdp-more" aria-labelledby="pairs-title">
+    <div class="pdp-more__head">
+      <h2 id="pairs-title" class="display" data-reveal="lines">Pairs well with</h2>
+      <a class="link-arrow" href="/shop">See all pieces <Icon name="arrow" size={18} /></a>
+    </div>
+    <div class="pdp-more__grid">
+      {pairs.map((x) => <div data-reveal="fade"><ProductCard product={x} /></div>)}
+    </div>
+  </section>
+
+  <script>
+    import '../../scripts/product';
+  </script>
+</Base>
+
+<style>
+  .pdp {
+    padding-top: var(--s-5);
+  }
+  .pdp__crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+  .pdp__crumbs li + li::before {
+    content: '/';
+    margin-right: var(--s-2);
+    color: var(--ink-3);
+  }
+  .pdp__crumbs a {
+    text-decoration: none;
+  }
+  .pdp__crumbs a:hover {
+    text-decoration: underline;
+  }
+  .pdp__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.45fr) minmax(0, 0.95fr);
+    grid-template-areas: 'info stage config';
+    gap: var(--s-6);
+    align-items: start;
+    margin-top: var(--s-5);
+  }
+  .pdp__info {
+    grid-area: info;
+    position: sticky;
+    top: calc(var(--header-h) + var(--s-5));
+    display: grid;
+    gap: var(--s-3);
+    padding-top: var(--s-8);
+  }
+  .pdp__title {
+    font-size: var(--step-2);
+    font-weight: 500;
+  }
+  .pdp__variant {
+    color: var(--ink-2);
+  }
+  .pdp__price {
+    font-size: var(--step-1);
+    margin-block: var(--s-2) var(--s-3);
+  }
+  .pdp__story {
+    max-width: 38ch;
+  }
+  .pdp__highlights {
+    display: grid;
+    gap: var(--s-2);
+    margin-top: var(--s-3);
+    font-size: 0.9375rem;
+  }
+  .pdp__highlights li {
+    display: grid;
+    grid-template-columns: 14px 1fr;
+    gap: var(--s-2);
+  }
+  .pdp__highlights li::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    margin-top: 0.62em;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  .pdp__stage-col {
+    grid-area: stage;
+    position: sticky;
+    top: calc(var(--header-h) + var(--s-3));
+  }
+  .pdp__tabs {
+    position: absolute;
+    z-index: 2;
+    top: var(--s-3);
+    left: var(--s-3);
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: var(--r-pill);
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+  .pdp__tabs button {
+    min-height: 36px;
+    padding: 0 var(--s-3);
+    border: 0;
+    border-radius: var(--r-pill);
+    background: transparent;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    transition: background-color var(--t-micro) var(--ease-out), color var(--t-micro) var(--ease-out);
+  }
+  .pdp__tabs button[aria-selected='true'] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .pdp__stage {
+    position: relative;
+    isolation: isolate;
+    aspect-ratio: 4 / 5;
+    max-height: calc(100dvh - var(--header-h) - var(--s-7));
+    width: 100%;
+  }
+  .pdp__view {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+  .pdp__view[hidden] {
+    display: none;
+  }
+  .pdp__img {
+    width: 78%;
+    height: 80%;
+    object-fit: contain;
+    object-position: center bottom;
+    margin-top: 6%;
+  }
+  .pdp__stage--photo .pdp__img,
+  .pdp__photo {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    object-fit: cover;
+  }
+  .pdp__view[data-view='product']::after {
+    content: '';
+    position: absolute;
+    left: 20%;
+    right: 20%;
+    bottom: 9%;
+    height: 6%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(0 0 0 / 0.22), transparent);
+    z-index: -1;
+  }
+  .pdp__stage--photo .pdp__view[data-view='product']::after {
+    display: none;
+  }
+
+  .pdp__config {
+    grid-area: config;
+    display: grid;
+    gap: var(--s-4);
+    padding-top: var(--s-8);
+  }
+  .config-card {
+    display: grid;
+    gap: var(--s-5);
+    padding: var(--s-5);
+    border-radius: var(--r-md);
+    background: var(--panel);
+  }
+  .config__group {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    display: grid;
+    gap: var(--s-3);
+    min-width: 0;
+  }
+  .config__group legend {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: var(--s-3);
+    padding: 0;
+    font-weight: 600;
+  }
+  .config__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-3);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--line);
+    font-weight: 600;
+  }
+  .config__frame {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-weight: 400;
+  }
+  .config__row--note {
+    display: grid;
+    gap: 2px;
+  }
+  .config__row--note .meta {
+    font-weight: 400;
+  }
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--s-2);
+  }
+  .swatch {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    outline-offset: 2px;
+  }
+  .swatch img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--t-component) var(--ease-out);
+  }
+  .swatch:hover img {
+    transform: scale(1.06);
+  }
+  /* Selected: a ring plus a check, so the state does not rely on colour alone. */
+  .swatch[aria-current='true'] {
+    box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink);
+  }
+  .swatch[aria-current='true']::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border-radius: 50%;
+    /* Fixed light badge: it sits on the photo, so it must not follow the theme. */
+    background: #f4efe6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1712' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4L18 8'/%3E%3C/svg%3E") center / 15px no-repeat;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
+  }
+  .config__desc {
+    margin-top: var(--s-1);
+  }
+  .pdp__add {
+    justify-content: space-between;
+    padding-inline: var(--s-5);
+  }
+  .pdp__add.is-added,
+  .buybar .btn.is-added {
+    --btn-bg: var(--focus);
+    --btn-ink: var(--paper);
+  }
+  .config__sample {
+    justify-self: start;
+  }
+  .disclosures {
+    border-top: 1px solid var(--line);
+  }
+  details {
+    border-bottom: 1px solid var(--line);
+  }
+  summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 52px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary :global(.icon) {
+    transition: transform var(--t-component) var(--ease-out);
+  }
+  details[open] summary :global(.icon) {
+    transform: rotate(180deg);
+  }
+  details::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    transition: block-size var(--t-component) var(--ease-smooth), content-visibility var(--t-component) allow-discrete;
+  }
+  details[open]::details-content {
+    block-size: auto;
+  }
+  @supports (interpolate-size: allow-keywords) {
+    :root {
+      interpolate-size: allow-keywords;
+    }
+  }
+  .dims {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-3) var(--s-4);
+    padding-bottom: var(--s-4);
+  }
+  .dims dt {
+    font-size: var(--step--1);
+    color: var(--ink-2);
+  }
+  .dims dd {
+    font-variant-numeric: tabular-nums;
+  }
+  .care,
+  .steps {
+    display: grid;
+    gap: var(--s-3);
+    padding-bottom: var(--s-4);
+    font-size: 0.9375rem;
+  }
+  .steps {
+    padding-left: 1.2em;
+  }
+
+  /* Buy bar */
+  .buybar {
+    position: fixed;
+    z-index: 45;
+    left: 0;
+    right: 0;
+    top: 0;
+    background: var(--glass);
+    -webkit-backdrop-filter: saturate(1.4) blur(18px);
+    backdrop-filter: saturate(1.4) blur(18px);
+    box-shadow: 0 1px 0 var(--line);
+    transform: translateY(-110%);
+    transition: transform var(--t-component) var(--ease-smooth);
+  }
+  :global(html:not(.header-hidden)) .buybar.is-visible {
+    transform: translateY(var(--header-h));
+  }
+  :global(html.header-hidden) .buybar.is-visible {
+    transform: translateY(0);
+  }
+  .buybar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    min-height: 68px;
+  }
+  .buybar__id {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-width: 0;
+  }
+  .buybar__id p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .buybar__thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: var(--r-sm);
+    background: var(--stage);
+  }
+  .buybar__short {
+    display: none;
+  }
+  .buybar__price::before {
+    content: '·';
+    margin-right: var(--s-2);
+  }
+
+  /* Gallery */
+  .pdp-gallery {
+    margin-top: var(--section);
+  }
+  .pdp-gallery__track {
+    display: flex;
+    gap: var(--s-3);
+    padding-inline: var(--gutter);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: thin;
+    overscroll-behavior-x: contain;
+  }
+  .pdp-gallery__item {
+    flex: 0 0 auto;
+    width: min(34vw, 520px);
+    aspect-ratio: 3 / 4;
+    scroll-snap-align: start;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    background: var(--panel);
+    position: relative;
+  }
+  .pdp-gallery__item--wide {
+    width: min(62vw, 1040px);
+    aspect-ratio: auto;
+  }
+  .pdp-gallery__item--swatch {
+    width: min(26vw, 400px);
+  }
+  .pdp-gallery__item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .pdp-gallery__item figcaption {
+    position: absolute;
+    left: var(--s-3);
+    bottom: var(--s-3);
+    padding: 4px 10px;
+    border-radius: var(--r-pill);
+    background: var(--glass);
+    color: var(--ink);
+  }
+
+  .pdp-more__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: var(--s-4);
+    margin-bottom: var(--s-6);
+  }
+  .pdp-more__head h2 {
+    font-size: var(--step-3);
+  }
+  .pdp-more__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-5);
+  }
+
+  @media (max-width: 1100px) {
+    .pdp__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas:
+        'stage stage'
+        'info config';
+    }
+    .pdp__stage-col {
+      position: relative;
+      top: auto;
+    }
+    .pdp__info {
+      position: static;
+    }
+    .pdp__stage {
+      aspect-ratio: 5 / 4;
+    }
+    .pdp__info,
+    .pdp__config {
+      padding-top: var(--s-4);
+    }
+    .pdp-gallery__item,
+    .pdp-gallery__item--swatch {
+      width: min(60vw, 420px);
+    }
+    .pdp-gallery__item--wide {
+      width: 86vw;
+    }
+    .pdp-more__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .pdp-more__grid > :nth-child(3) {
+      display: none;
+    }
+  }
+  @media (max-width: 720px) {
+    .pdp__grid {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'stage' 'info' 'config';
+      gap: var(--s-5);
+    }
+    .pdp__stage {
+      aspect-ratio: 4 / 5;
+    }
+    .pdp-more__grid {
+      grid-template-columns: 1fr;
+      gap: var(--s-7);
+    }
+    /* On phones the bar sits at the bottom, within thumb reach. */
+    .buybar {
+      top: auto;
+      bottom: 0;
+      transform: translateY(110%);
+      box-shadow: 0 -1px 0 var(--line);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    :global(html:not(.header-hidden)) .buybar.is-visible,
+    :global(html.header-hidden) .buybar.is-visible {
+      transform: translateY(0);
+    }
+    .buybar__id .meta {
+      display: none;
+    }
+    .buybar .btn {
+      padding-inline: var(--s-4);
+    }
+    .buybar__long {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+    .buybar__short {
+      display: inline;
+    }
+  }
+</style>

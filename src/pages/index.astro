@@ -1,0 +1,521 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import Icon from '../components/Icon.astro';
+import { products, productBySlug, materials, formatPrice, brand, instagramDm, mapsUrl } from '../data/catalog';
+import sceneZabarwan from '../assets/scenes/zabarwan.jpg';
+import scenePair from '../assets/scenes/nishat-pair.jpg';
+
+const saddle = productBySlug['nishat-dining-chair-saddle'];
+const dal = productBySlug['nishat-dining-chair-dal'];
+const order = ['nishat-pair', 'zabarwan-lounge-chair', 'nishat-dining-chair-saddle', 'nishat-dining-chair-dal', 'zabarwan-lumbar-cushion'];
+const collection = order.map((s) => productBySlug[s]);
+---
+<Base>
+  <!-- Hero: two leathers, one frame -->
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero__copy">
+      <p class="eyebrow" data-reveal="fade">{brand.line}</p>
+      <h1 id="hero-title" class="hero__title display" data-reveal="lines" data-now data-delay="0.15">
+        Crafted for comfort, designed for luxury.
+      </h1>
+      <p class="lead" data-reveal="fade">
+        Solid wood chairs and lounge pieces, made by hand in {brand.location} and finished in the leather or cloth you choose.
+      </p>
+      <div class="hero__ctas" data-reveal="fade">
+        <a class="btn" href="/shop">Shop the collection</a>
+        <a class="btn btn--ghost" href="#visit">Visit the workshop</a>
+      </div>
+    </div>
+
+    <div class="hero__stage" data-hero-stage>
+      {
+        [saddle, dal].map((p, i) => (
+          <a class={`hero__chair hero__chair--${i === 0 ? 'left' : 'right'}`} href={`/product/${p.slug}`} data-hero-chair={i === 0 ? 'left' : 'right'}>
+            <Image
+              src={p.image}
+              alt={`${p.name} in ${p.variant}`}
+              widths={[360, 540, 720, 960]}
+              sizes="(max-width: 900px) 46vw, 26vw"
+              loading="eager"
+              fetchpriority="high"
+              class="hero__img"
+            />
+            <span class="hero__tag">
+              <span>
+                <strong>{p.variant}</strong>
+                <span class="price">{formatPrice(p.price)}</span>
+              </span>
+              <Icon name="arrow" size={18} />
+            </span>
+          </a>
+        ))
+      }
+      <p class="hero__caption meta">Nishat Dining Chair. One frame, two leathers.</p>
+    </div>
+  </section>
+
+  <!-- Statement -->
+  <section class="statement wrap section" aria-label="About Casa Craft">
+    <p class="statement__text" data-scrub-words>
+      Every Casa Craft piece begins as solid wood and is shaped, joined and upholstered by hand in our workshop in
+      Nowgam, Srinagar. We make each one to order, so it arrives finished in the material you picked for your room.
+    </p>
+  </section>
+
+  <!-- Collection -->
+  <section class="wrap collection" aria-labelledby="collection-title">
+    <div class="section-head">
+      <h2 id="collection-title" class="display" data-reveal="lines">The collection</h2>
+      <a class="link-arrow" href="/shop">Shop all {products.length} pieces <Icon name="arrow" size={18} /></a>
+    </div>
+    <div class="collection__grid">
+      {
+        collection.map((p, i) => (
+          <div class:list={['collection__cell', `collection__cell--${i}`]} data-reveal="fade">
+            <ProductCard product={p} size={i === 0 ? 'wide' : 'regular'} />
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Scene -->
+  <section class="scene section" aria-labelledby="scene-title">
+    <div class="scene__frame" data-reveal="clip">
+      <div class="scene__media" data-parallax="6">
+        <Image src={sceneZabarwan} alt="The Zabarwan Lounge Chair in late sun against a limewashed wall" widths={[800, 1200, 1600, 2000, 2400]} sizes="100vw" />
+      </div>
+    </div>
+    <div class="scene__card wrap">
+      <div class="scene__text" data-reveal="fade">
+        <p class="eyebrow">Zabarwan Lounge Chair</p>
+        <h2 id="scene-title" class="scene__title">A few long lines of ebonised wood, and a seat you sink into.</h2>
+        <a class="link-arrow" href="/product/zabarwan-lounge-chair">See the Zabarwan <Icon name="arrow" size={18} /></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Materials -->
+  <section class="wrap materials-teaser" aria-labelledby="materials-title">
+    <div class="section-head">
+      <div>
+        <h2 id="materials-title" class="display" data-reveal="lines">Material library</h2>
+        <p class="lead" data-reveal="fade">Two leathers, one bouclé and two wood finishes. Every swatch here is photographed on a finished piece.</p>
+      </div>
+      <a class="link-arrow" href="/materials">Open the library <Icon name="arrow" size={18} /></a>
+    </div>
+    <ul class="materials-teaser__row" role="list">
+      {
+        materials.map((m) => (
+          <li data-reveal="fade">
+            <a href={`/materials#${m.id}`} class="mat">
+              <span class="mat__img">
+                <Image src={m.swatch} alt="" widths={[300, 480]} sizes="(max-width: 700px) 44vw, 18vw" />
+              </span>
+              <span class="mat__name">{m.name}</span>
+              <span class="meta">{m.family}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- How it works -->
+  <section class="wrap section process" aria-labelledby="process-title">
+    <h2 id="process-title" class="display" data-reveal="lines">How a piece reaches you</h2>
+    <ol class="process__steps" role="list">
+      <li data-reveal="fade">
+        <span class="process__n" aria-hidden="true">1</span>
+        <h3>Choose</h3>
+        <p>Pick a piece and its leather or cloth, then add it to your enquiry. Nothing is charged online.</p>
+      </li>
+      <li data-reveal="fade">
+        <span class="process__n" aria-hidden="true">2</span>
+        <h3>Confirm</h3>
+        <p>Send the list to us on Instagram. We reply with lead time, delivery and any changes you would like.</p>
+      </li>
+      <li data-reveal="fade">
+        <span class="process__n" aria-hidden="true">3</span>
+        <h3>Made by hand</h3>
+        <p>Your piece is built in solid wood and upholstered in our workshop, then delivered to your door.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- Visit -->
+  <section id="visit" class="visit wrap" aria-labelledby="visit-title">
+    <div class="visit__media" data-reveal="clip">
+      <Image src={scenePair} alt="Two Nishat Dining Chairs, one in Saddle and one in Dal leather, on a patterned rug" widths={[700, 1000, 1400]} sizes="(max-width: 900px) 100vw, 50vw" />
+    </div>
+    <div class="visit__text">
+      <p class="eyebrow" data-reveal="fade">Visit</p>
+      <h2 id="visit-title" class="display" data-reveal="lines">Come and sit in them.</h2>
+      <p class="lead" data-reveal="fade">
+        Our workshop is in {brand.location}. Message us to arrange a visit, see leathers in daylight, or ask about a piece made to your measurements.
+      </p>
+      <div class="hero__ctas" data-reveal="fade">
+        <a class="btn" href={instagramDm} target="_blank" rel="noopener"><Icon name="instagram" size={18} /> Message us</a>
+        <a class="btn btn--ghost" href={mapsUrl} target="_blank" rel="noopener"><Icon name="pin" size={18} /> Open in Maps</a>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import '../scripts/home';
+  </script>
+</Base>
+
+<style>
+  @property --split {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 50%;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    align-items: center;
+    gap: var(--s-7);
+    min-height: calc(100dvh - var(--header-h));
+    padding-block: var(--s-6) var(--s-8);
+  }
+  .hero__copy {
+    display: grid;
+    gap: var(--s-5);
+  }
+  .hero__title {
+    font-size: var(--step-4);
+    max-width: 9ch;
+  }
+  .hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-2);
+  }
+  .hero__stage {
+    --left: var(--tint-saddle);
+    --right: var(--tint-dal);
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+    gap: 2%;
+    aspect-ratio: 1 / 1;
+    padding: 12% 6% 14%;
+    border-radius: var(--r-lg);
+    /* The signature: each leather tints its half of the stage. The seam moves toward the chair you look at. */
+    background: linear-gradient(
+      90deg,
+      var(--left) 0%,
+      var(--left) calc(var(--split) - 14%),
+      var(--right) calc(var(--split) + 14%),
+      var(--right) 100%
+    );
+    transition: --split 900ms var(--ease-smooth);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .hero__stage[data-focus='left'] {
+    --split: 92%;
+  }
+  .hero__stage[data-focus='right'] {
+    --split: 8%;
+  }
+  .hero__chair {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    text-decoration: none;
+    border-radius: var(--r-md);
+  }
+  .hero__chair::after {
+    content: '';
+    position: absolute;
+    left: 14%;
+    right: 14%;
+    bottom: -3%;
+    height: 7%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(0 0 0 / 0.26), transparent);
+    z-index: -1;
+  }
+  .hero__img {
+    width: 100%;
+    height: auto;
+    transition: transform 800ms var(--ease-out);
+  }
+  .hero__stage[data-focus='left'] .hero__chair--left .hero__img,
+  .hero__stage[data-focus='right'] .hero__chair--right .hero__img {
+    transform: translateY(-2%) scale(1.04);
+  }
+  .hero__stage[data-focus='left'] .hero__chair--right .hero__img,
+  .hero__stage[data-focus='right'] .hero__chair--left .hero__img {
+    transform: scale(0.97);
+    opacity: 0.85;
+  }
+  .hero__tag {
+    position: absolute;
+    bottom: -18%;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: 8px 10px 8px 16px;
+    border-radius: var(--r-pill);
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: var(--shadow-soft);
+    color: var(--ink);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    transition: transform var(--t-component) var(--ease-out);
+  }
+  .hero__tag > span {
+    display: grid;
+    line-height: 1.25;
+  }
+  .hero__chair:hover .hero__tag,
+  .hero__chair:focus-visible .hero__tag {
+    transform: translateY(-4px);
+  }
+  .hero__caption {
+    position: absolute;
+    top: var(--s-5);
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: var(--ink-2);
+  }
+
+  /* ---------- Statement ---------- */
+  .statement__text {
+    max-width: 30ch;
+    margin-inline: auto;
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 1.2rem + 2.6vw, 3.6rem);
+    line-height: 1.15;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  /* ---------- Section heads ---------- */
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: var(--s-4);
+    margin-bottom: var(--s-7);
+  }
+  .section-head h2,
+  .process > h2,
+  .visit h2 {
+    font-size: var(--step-3);
+  }
+  .section-head .lead {
+    margin-top: var(--s-3);
+    max-width: 44ch;
+  }
+
+  /* ---------- Collection ---------- */
+  .collection__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-8) var(--s-5);
+  }
+  .collection__cell--0 {
+    grid-column: span 2;
+  }
+  @media (max-width: 1100px) {
+    .collection__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 620px) {
+    .collection__grid {
+      grid-template-columns: 1fr;
+      gap: var(--s-7);
+    }
+    .collection__cell--0 {
+      grid-column: auto;
+    }
+  }
+
+  /* ---------- Scene ---------- */
+  .scene {
+    position: relative;
+  }
+  .scene__frame {
+    position: relative;
+    height: clamp(420px, 82vh, 900px);
+    overflow: hidden;
+  }
+  .scene__media {
+    position: absolute;
+    inset: -8% 0;
+  }
+  .scene__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 58% 60%;
+  }
+  .scene__card {
+    position: relative;
+    margin-top: calc(-1 * var(--s-10));
+  }
+  .scene__text {
+    display: grid;
+    gap: var(--s-3);
+    max-width: 440px;
+    padding: var(--s-6);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    box-shadow: var(--shadow-soft);
+  }
+  .scene__title {
+    font-size: var(--step-2);
+    font-weight: 500;
+  }
+
+  /* ---------- Materials ---------- */
+  .materials-teaser__row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--s-4);
+  }
+  .mat {
+    display: grid;
+    gap: 2px;
+    text-decoration: none;
+  }
+  .mat__img {
+    display: block;
+    aspect-ratio: 3 / 4;
+    margin-bottom: var(--s-3);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .mat__img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 900ms var(--ease-out);
+  }
+  .mat:hover .mat__img img {
+    transform: scale(1.06);
+  }
+  .mat__name {
+    font-weight: 600;
+  }
+  @media (max-width: 900px) {
+    .materials-teaser__row {
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: 42%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      margin-inline: calc(-1 * var(--gutter));
+      padding-inline: var(--gutter);
+      scroll-padding-inline: var(--gutter);
+      scrollbar-width: none;
+    }
+    .materials-teaser__row li {
+      scroll-snap-align: start;
+    }
+  }
+
+  /* ---------- Process ---------- */
+  .process__steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-6);
+    margin-top: var(--s-7);
+  }
+  .process__steps li {
+    display: grid;
+    align-content: start;
+    gap: var(--s-3);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--line-strong);
+  }
+  .process__n {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-3);
+    line-height: 1;
+    color: var(--brass);
+  }
+  .process__steps h3 {
+    font-size: var(--step-1);
+    font-weight: 600;
+  }
+  .process__steps p {
+    color: var(--ink-2);
+    max-width: 36ch;
+  }
+
+  /* ---------- Visit ---------- */
+  .visit {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: var(--s-8);
+    scroll-margin-top: var(--header-h);
+  }
+  .visit__media {
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+  }
+  .visit__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .visit__text {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  @media (max-width: 900px) {
+    .hero {
+      grid-template-columns: 1fr;
+      min-height: 0;
+      gap: var(--s-6);
+      padding-top: var(--s-5);
+    }
+    .hero__title {
+      max-width: 11ch;
+    }
+    .hero__stage {
+      aspect-ratio: 5 / 4;
+      padding: 13% 5% 16%;
+    }
+    .hero__tag {
+      bottom: -20%;
+      padding: 6px 8px 6px 12px;
+      font-size: 0.8125rem;
+    }
+    .process__steps {
+      grid-template-columns: 1fr;
+      gap: var(--s-5);
+    }
+    .visit {
+      grid-template-columns: 1fr;
+      gap: var(--s-6);
+    }
+  }
+  @media (max-width: 420px) {
+    .hero__tag .price {
+      display: none;
+    }
+  }
+</style>

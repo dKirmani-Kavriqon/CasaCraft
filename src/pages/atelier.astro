@@ -1,0 +1,137 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Logo from '../components/Logo.astro';
+import { brand, instagramDm, instagramUrl, mapsUrl } from '../data/catalog';
+import frame from '../assets/scenes/zabarwan-frame.jpg';
+import arms from '../assets/scenes/nishat-arms.jpg';
+import pair from '../assets/scenes/nishat-pair.jpg';
+---
+<Base title="Atelier" description="Casa Craft Interiors makes solid wood furniture by hand in Nowgam, Srinagar. Every piece is made to order.">
+  <header class="wrap at-head">
+    <Logo size="lg" withWordmark={false} />
+    <h1 class="display" data-reveal="lines" data-now>Rooted in solid wood.</h1>
+    <p class="lead" data-reveal="fade">
+      Casa Craft Interiors is a furniture workshop in {brand.location}. We make chairs and lounge pieces by hand, in solid wood, one order at a time.
+    </p>
+  </header>
+
+  <section class="wrap at-split" aria-labelledby="at-1">
+    <figure class="at-split__media" data-reveal="clip">
+      <Image src={frame} alt="The ebonised solid wood frame of the Zabarwan Lounge Chair" widths={[600, 900, 1200]} sizes="(max-width: 900px) 100vw, 50vw" />
+    </figure>
+    <div class="at-split__text stack">
+      <h2 id="at-1" data-reveal="fade">Solid wood, start to finish</h2>
+      <p data-reveal="fade">
+        Frames are cut, shaped and joined from solid wood, then finished by hand. The wood is the structure of the piece, not a veneer over it, which is why
+        it lasts and why it can be repaired.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap at-split at-split--flip" aria-labelledby="at-2">
+    <figure class="at-split__media" data-reveal="clip">
+      <Image src={arms} alt="Where the Nishat chair's wooden shell meets its leather back" widths={[600, 900, 1200]} sizes="(max-width: 900px) 100vw, 50vw" />
+    </figure>
+    <div class="at-split__text stack">
+      <h2 id="at-2" data-reveal="fade">Made to order</h2>
+      <p data-reveal="fade">
+        Nothing waits in a warehouse. When you order, we build your piece and upholster it in the material you chose. It takes a little longer, and the
+        piece that arrives is yours from the first joint.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap at-split" aria-labelledby="at-3">
+    <figure class="at-split__media" data-reveal="clip">
+      <Image src={pair} alt="Two Nishat chairs in Saddle and Dal leather" widths={[700, 1000, 1400]} sizes="(max-width: 900px) 100vw, 50vw" />
+    </figure>
+    <div class="at-split__text stack">
+      <h2 id="at-3" data-reveal="fade">Named for home</h2>
+      <p data-reveal="fade">
+        Our pieces carry names from around Srinagar. The Nishat takes its name from the terraced garden on Dal Lake, and its blue leather from the lake
+        itself. The Zabarwan is named for the range that rises behind the city.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap section at-cta" aria-labelledby="at-cta">
+    <h2 id="at-cta" class="display" data-reveal="lines">Talk to the workshop</h2>
+    <p class="lead" data-reveal="fade">Ask about a piece, a leather, or something made to your measurements. We reply on Instagram.</p>
+    <div class="at-cta__row" data-reveal="fade">
+      <a class="btn" href={instagramDm} target="_blank" rel="noopener"><Icon name="instagram" size={18} /> Message @{brand.instagram}</a>
+      <a class="btn btn--ghost" href={mapsUrl} target="_blank" rel="noopener"><Icon name="pin" size={18} /> {brand.location}</a>
+    </div>
+    <a class="link-arrow" href={instagramUrl} target="_blank" rel="noopener">See recent work on Instagram <Icon name="arrow" size={18} /></a>
+  </section>
+</Base>
+
+<style>
+  .at-head {
+    display: grid;
+    justify-items: start;
+    gap: var(--s-5);
+    padding-block: clamp(var(--s-6), 5vw, var(--s-9)) var(--s-9);
+  }
+  .at-head h1 {
+    font-size: var(--step-4);
+    max-width: 10ch;
+  }
+  .at-head .lead {
+    max-width: 46ch;
+  }
+  .at-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: center;
+    gap: var(--s-8);
+    padding-block: var(--s-7);
+  }
+  .at-split--flip .at-split__media {
+    order: 2;
+  }
+  .at-split__media {
+    margin: 0;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+  }
+  .at-split__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .at-split__text {
+    --flow: var(--s-4);
+    max-width: 40ch;
+  }
+  .at-split__text h2 {
+    font-size: var(--step-2);
+  }
+  .at-split__text p {
+    color: var(--ink-2);
+  }
+  .at-cta {
+    display: grid;
+    justify-items: start;
+    gap: var(--s-4);
+  }
+  .at-cta h2 {
+    font-size: var(--step-3);
+  }
+  .at-cta__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+  }
+  @media (max-width: 900px) {
+    .at-split {
+      grid-template-columns: 1fr;
+      gap: var(--s-5);
+    }
+    .at-split--flip .at-split__media {
+      order: 0;
+    }
+  }
+</style>

@@ -1,0 +1,106 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { brand, categories, instagramUrl, instagramDm, mapsUrl } from '../data/catalog';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="wrap">
+    <p class="site-footer__line display" data-reveal="lines">{brand.line}</p>
+
+    <div class="site-footer__grid">
+      <div class="site-footer__brand">
+        <Logo />
+        <p class="meta">Solid wood furniture, made by hand in {brand.location}.</p>
+      </div>
+
+      <nav aria-labelledby="f-shop">
+        <h2 id="f-shop" class="eyebrow">Shop</h2>
+        <ul role="list">
+          <li><a href="/shop">All pieces</a></li>
+          {categories.map((c) => <li><a href={`/shop/${c.id}`}>{c.name}</a></li>)}
+        </ul>
+      </nav>
+
+      <nav aria-labelledby="f-studio">
+        <h2 id="f-studio" class="eyebrow">Studio</h2>
+        <ul role="list">
+          <li><a href="/materials">Material library</a></li>
+          <li><a href="/atelier">Atelier</a></li>
+          <li><a href="/#visit">Visit the workshop</a></li>
+        </ul>
+      </nav>
+
+      <div>
+        <h2 class="eyebrow">Talk to us</h2>
+        <ul role="list">
+          <li><a href={instagramDm} rel="noopener" target="_blank"><Icon name="instagram" size={18} /> Message on Instagram</a></li>
+          {brand.whatsapp && <li><a href={`https://wa.me/${brand.whatsapp}`} rel="noopener" target="_blank"><Icon name="whatsapp" size={18} /> WhatsApp</a></li>}
+          {brand.email && <li><a href={`mailto:${brand.email}`}><Icon name="mail" size={18} /> {brand.email}</a></li>}
+          <li><a href={mapsUrl} rel="noopener" target="_blank"><Icon name="pin" size={18} /> {brand.location}</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="site-footer__base meta">
+      <p>© {year} {brand.name}</p>
+      <a href={instagramUrl} rel="noopener" target="_blank">@{brand.instagram}</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--s-8);
+    padding-block: var(--s-9) var(--s-6);
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+  }
+  .site-footer__line {
+    font-size: var(--step-4);
+    max-width: 20ch;
+    margin-bottom: var(--s-9);
+  }
+  .site-footer__grid {
+    display: grid;
+    grid-template-columns: 1.6fr repeat(3, 1fr);
+    gap: var(--s-7) var(--s-6);
+  }
+  .site-footer__brand {
+    display: grid;
+    align-content: start;
+    gap: var(--s-4);
+    max-width: 30ch;
+  }
+  .site-footer h2 {
+    margin-bottom: var(--s-3);
+  }
+  .site-footer ul a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 36px;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .site-footer ul a:hover {
+    text-decoration: underline;
+  }
+  .site-footer__base {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--s-3);
+    margin-top: var(--s-9);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--line);
+  }
+  @media (max-width: 900px) {
+    .site-footer__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .site-footer__brand {
+      grid-column: 1 / -1;
+    }
+  }
+</style>
